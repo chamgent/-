@@ -8,8 +8,8 @@ def gesture_recognizer(hand_landmarks):
     p0_x = hand_landmarks.landmark[0].x
     p0_y = hand_landmarks.landmark[0].y
 
-    p2_x = hand_landmarks.landmark[2].x
-    p2_y = hand_landmarks.landmark[2].y
+    p1_x = hand_landmarks.landmark[1].x
+    p1_y = hand_landmarks.landmark[1].y
 
     p4_x = hand_landmarks.landmark[4].x
     p4_y = hand_landmarks.landmark[4].y
@@ -38,8 +38,9 @@ def gesture_recognizer(hand_landmarks):
     p20_x = hand_landmarks.landmark[20].x
     p20_y = hand_landmarks.landmark[20].y
 
-    distance0_2 = ((p0_x - p2_x) ** 2 + (p0_y - p2_y) ** 2) ** 0.5
+    distance0_1 = ((p0_x - p1_x) ** 2 + (p0_y - p1_y) ** 2) ** 0.5
     distance0_4 = ((p0_x - p4_x) ** 2 + (p0_y - p4_y) ** 2) ** 0.5
+    distance1_4 = ((p1_x - p4_x) ** 2 + (p1_y - p4_y) ** 2) ** 0.5
     distance0_5 = ((p0_x - p5_x) ** 2 + (p0_y - p5_y) ** 2) ** 0.5
     distance0_8 = ((p0_x - p8_x) ** 2 + (p0_y - p8_y) ** 2) ** 0.5
     distance0_9 = ((p0_x - p9_x) ** 2 + (p0_y - p9_y) ** 2) ** 0.5
@@ -51,17 +52,18 @@ def gesture_recognizer(hand_landmarks):
 
 
 
-    # if (distance0_2/distance0_4)<0.61  #拇指伸开
+    # if (distance0_1 ** 2 + distance1_4 ** 2 -distance0_4 ** 2)/(2 * distance0_1 * distance1_4)<-0.7  #拇指伸开
+    # if -0.7<(distance0_1 ** 2 + distance1_4 ** 2 -distance0_4 ** 2)/(2 * distance0_1 * distance1_4)<-0.5  #拇指与手掌距离较近
     # if (distance0_5/distance0_8)<0.8  #食指伸开
     # if (distance0_9/distance0_12)<0.8  #中指伸开
     # if (distance0_13/distance0_16)<0.8  #无名指伸开
     # if (distance0_17/distance0_20)<0.8  #小拇指伸开
 
-    if (distance0_2/distance0_4)>=0.61 and (distance0_5/distance0_8)>=0.8 and (distance0_9/distance0_12)>=0.8 and (distance0_13/distance0_16)>=0.8 and (distance0_17/distance0_20)>=0.8:
+    if (distance0_1 ** 2 + distance1_4 ** 2 -distance0_4 ** 2)/(2 * distance0_1 * distance1_4)>=-0.7 and (distance0_5/distance0_8)>=0.8 and (distance0_9/distance0_12)>=0.8 and (distance0_13/distance0_16)>=0.8 and (distance0_17/distance0_20)>=0.8:
         return 1
-    elif (distance0_2/distance0_4)<0.61 and (distance0_5/distance0_8)<0.8 and (distance0_9/distance0_12)<0.8 and (distance0_13/distance0_16)<0.8 and (distance0_17/distance0_20)<0.8:
+    elif (distance0_1 ** 2 + distance1_4 ** 2 -distance0_4 ** 2)/(2 * distance0_1 * distance1_4)<-0.5 and (distance0_5/distance0_8)<0.8 and (distance0_9/distance0_12)<0.8 and (distance0_13/distance0_16)<0.8 and (distance0_17/distance0_20)<0.8:
         return 2
-    elif (distance0_2/distance0_4)>=0.61 and (distance0_5/distance0_8)<0.8 and (distance0_9/distance0_12)<0.8 and (distance0_13/distance0_16)>=0.8 and (distance0_17/distance0_20)>=0.8:
+    elif (distance0_1 ** 2 + distance1_4 ** 2 -distance0_4 ** 2)/(2 * distance0_1 * distance1_4)>=-0.7 and (distance0_5/distance0_8)<0.8 and (distance0_9/distance0_12)<0.8 and (distance0_13/distance0_16)>=0.8 and (distance0_17/distance0_20)>=0.8:
         return 3
     else:
         return 0
@@ -85,20 +87,20 @@ mpHands = mp.solutions.hands
 hands = mpHands.Hands(static_image_mode=False,
                       max_num_hands=1,
                       model_complexity=1,
-                      min_detection_confidence=0.8,
-                      min_tracking_confidence=0.8)
+                      min_detection_confidence=0.3,
+                      min_tracking_confidence=0.3)
 
-# 手势列表
-gestures = ['None','Rock','Paper','Scissors']
+#手势列表
+gestures=['None','Rock','Paper','Scissors']
 
 # 初始化摄像头
 cap = cv2.VideoCapture(0)
 
-# sys代表系统手势，flag记录用户手势变化
-sys,flag = 0,0
+#sys代表系统手势，flag记录用户手势变化
+sys,flag=0,0
 
 while True:
-    # user为用户手势
+    #user为用户手势
     user = 0
 
     # 读取摄像头帧
@@ -110,7 +112,7 @@ while True:
     # 设置镜像
     img = cv2.flip(img,1)
 
-    # 得到对帧处理结果
+    #得到对帧处理结果
     results = hands.process(img)
 
     # 绘制手部关键点
@@ -119,7 +121,7 @@ while True:
             mp.solutions.drawing_utils.draw_landmarks(img, hand_landmarks, mpHands.HAND_CONNECTIONS)
             user = gesture_recognizer(hand_landmarks)
 
-    # 当用户手势变化时，生成随机手势
+    #当用户手势变化时，生成随机手势
     if user and flag != user:
         sys = random.randint(1, 3)
     elif user==0:
@@ -127,7 +129,7 @@ while True:
     flag = user
 
 
-    # 输出1、用户手势；2、系统手势；3、比赛结果
+    #输出1、用户手势；2、系统手势；3、比赛结果
     cv2.putText(img, f"Your gesture: {gestures[user]}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3,
                 cv2.LINE_AA)
     cv2.putText(img, f"Opponent's gesture: {gestures[sys]}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3,
