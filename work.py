@@ -1,6 +1,6 @@
 import random
 import cv2
-import mediapipe as mp
+from mediapipe import solutions
 
 # 定义一个函数来识别手势
 def gesture_recognizer(hand_landmarks):
@@ -81,9 +81,8 @@ def compare_gestures(user, sys):
     else:
         return ""
 
-
 # 初始化MediaPipe Hands模型
-mpHands = mp.solutions.hands
+mpHands = solutions.hands
 hands = mpHands.Hands(static_image_mode=False,
                       max_num_hands=1,
                       model_complexity=1,
@@ -118,7 +117,7 @@ while True:
     # 绘制手部关键点
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
-            mp.solutions.drawing_utils.draw_landmarks(img, hand_landmarks, mpHands.HAND_CONNECTIONS)
+            solutions.drawing_utils.draw_landmarks(img, hand_landmarks, mpHands.HAND_CONNECTIONS)
             user = gesture_recognizer(hand_landmarks)
 
     #当用户手势变化时，生成随机手势
